@@ -130,3 +130,40 @@ def unregister_from_activity(activity_name: str, email: str):
     # Remove student
     activity["participants"].remove(email)
     return {"message": f"Unregistered {email} from {activity_name}"}
+
+# Add categories to activities
+def categorize_activities():
+    for activity_name, details in activities.items():
+        if "Chess" in activity_name or "Math" in activity_name:
+            details["category"] = "Academic"
+        elif "Programming" in activity_name or "Technology" in details.get("description", ""):
+            details["category"] = "Technology"
+        elif "Gym" in activity_name or "Soccer" in activity_name or "Basketball" in activity_name:
+            details["category"] = "Sports"
+        elif "Art" in activity_name or "Drama" in activity_name:
+            details["category"] = "Arts"
+        elif "Debate" in activity_name:
+            details["category"] = "Other"
+        else:
+            details["category"] = "Uncategorized"
+
+# Categorize activities on startup
+categorize_activities()
+
+@app.get("/activities/filter")
+def filter_activities(category: str = None, search: str = None):
+    """Filter activities by category or search term"""
+    filtered = activities
+
+    if category:
+        filtered = {name: details for name, details in filtered.items() if details.get("category") == category}
+
+    if search:
+        search_lower = search.lower()
+        filtered = {
+            name: details
+            for name, details in filtered.items()
+            if search_lower in name.lower() or search_lower in details.get("description", "").lower()
+        }
+
+    return filtered
